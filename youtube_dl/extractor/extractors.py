@@ -451,6 +451,7 @@ from .hungama import (
     HungamaSongIE,
 )
 from .hypem import HypemIE
+from .ifeng import IFengIE
 from .ign import (
     IGNIE,
     OneUPIE,
