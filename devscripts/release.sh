@@ -52,10 +52,6 @@ if test "$major_version" '!=' "$(date '+%Y.%m.%d')"; then
 fi
 
 if [ ! -z "`git tag | grep "$version"`" ]; then echo 'ERROR: version already present'; exit 1; fi
-if [ ! -z "`git status --porcelain | grep -v CHANGELOG`" ]; then echo 'ERROR: the working directory is not clean; commit or stash changes'; exit 1; fi
-useless_files=$(find youtube_dl -type f -not -name '*.py')
-if [ ! -z "$useless_files" ]; then echo "ERROR: Non-.py files in youtube_dl: $useless_files"; exit 1; fi
-if [ ! -f "updates_key.pem" ]; then echo 'ERROR: updates_key.pem missing'; exit 1; fi
 if ! type pandoc >/dev/null 2>/dev/null; then echo 'ERROR: pandoc is missing'; exit 1; fi
 if ! python3 -c 'import rsa' 2>/dev/null; then echo 'ERROR: python3-rsa is missing'; exit 1; fi
 if ! python3 -c 'import wheel' 2>/dev/null; then echo 'ERROR: wheel is missing'; exit 1; fi
@@ -76,21 +72,6 @@ sed -i "s/__version__ = '.*'/__version__ = '$version'/" youtube_dl/version.py
 
 /bin/echo -e "\n### Changing version in ChangeLog..."
 sed -i "s/<unreleased>/$version/" ChangeLog
-
-/bin/echo -e "\n### Committing documentation, templates and youtube_dl/version.py..."
-make README.md CONTRIBUTING.md issuetemplates supportedsites
-git add README.md CONTRIBUTING.md .github/ISSUE_TEMPLATE/1_broken_site.md .github/ISSUE_TEMPLATE/2_site_support_request.md .github/ISSUE_TEMPLATE/3_site_feature_request.md .github/ISSUE_TEMPLATE/4_bug_report.md .github/ISSUE_TEMPLATE/5_feature_request.md .github/ISSUE_TEMPLATE/6_question.md docs/supportedsites.md youtube_dl/version.py ChangeLog
-git commit $gpg_sign_commits -m "release $version"
-
-/bin/echo -e "\n### Now tagging, signing and pushing..."
-git tag -s -m "Release $version" "$version"
-git show "$version"
-read -p "Is it good, can I push? (y/n) " -n 1
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then exit 1; fi
-echo
-MASTER=$(git rev-parse --abbrev-ref HEAD)
-git push origin $MASTER:master
-git push origin "$version"
 
 /bin/echo -e "\n### OK, now it is time to build the binaries..."
 REV=$(git rev-parse HEAD)
